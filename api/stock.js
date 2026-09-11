@@ -21,7 +21,8 @@ export default async function handler(req, res) {
   try {
     const auth = Buffer.from(`${SMARTBILL_EMAIL}:${SMARTBILL_TOKEN}`).toString("base64");
 
-    const params = new URLSearchParams({ cif: SMARTBILL_CIF });
+    const today = new Date().toISOString().slice(0, 10);
+    const params = new URLSearchParams({ cif: SMARTBILL_CIF, date: today });
     // Optional: filtreaza pe o singura gestiune daca ai mai multe.
     // params.set("warehouseName", "Showroom Promenada");
 
