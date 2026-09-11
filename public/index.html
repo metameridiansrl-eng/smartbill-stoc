@@ -81,7 +81,7 @@
     font-size: 22px;
     font-weight: 700;
   }
-    .qty.ok { color: var(--ok); }
+  .qty.ok { color: var(--ok); }
   .qty.zero { color: var(--zero); }
   .row .price {
     font-size: 13px;
@@ -99,12 +99,51 @@
     text-transform: uppercase;
     letter-spacing: 0.02em;
   }
-  }
   .empty {
     text-align: center;
     color: var(--muted);
     margin-top: 40px;
     font-size: 14px;
+  }
+  .search-row {
+    display: flex;
+    gap: 8px;
+  }
+  #search { flex: 1; }
+  #scan-btn {
+    flex-shrink: 0;
+    width: 52px;
+    font-size: 22px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    cursor: pointer;
+  }
+  #scan-btn:active { background: #f0efeb; }
+  .scanner-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+  }
+  #reader {
+    flex: 1;
+  }
+  #scan-close {
+    padding: 16px;
+    font-size: 16px;
+    background: #111;
+    color: #fff;
+    border: none;
+  }
+  .scan-hint {
+    color: #fff;
+    text-align: center;
+    font-size: 13px;
+    padding: 8px;
+    background: #000;
   }
 </style>
 </head>
@@ -112,12 +151,22 @@
 
 <header>
   <h1>Căutare stoc</h1>
-  <input id="search" type="text" placeholder="Caută după cod, denumire, culoare, brand…" autofocus />
+  <div class="search-row">
+    <input id="search" type="text" placeholder="Caută după cod, denumire, culoare, brand…" autofocus />
+    <button id="scan-btn" aria-label="Scanează cod de bare">📷</button>
+  </div>
   <div id="status">Se încarcă…</div>
 </header>
 
 <main id="results"></main>
 
+<div id="scanner-overlay" class="scanner-overlay" style="display:none;">
+  <div class="scan-hint">Îndreaptă camera spre codul de bare</div>
+  <div id="reader"></div>
+  <button id="scan-close">✕ Închide</button>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
