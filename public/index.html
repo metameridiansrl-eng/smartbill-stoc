@@ -46,6 +46,17 @@
     color: var(--muted);
     margin-top: 8px;
   }
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .nav-link {
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+  }
   main {
     max-width: 900px;
     margin: 0 auto;
@@ -150,7 +161,10 @@
 <body>
 
 <header>
-  <h1>Căutare stoc</h1>
+  <div class="title-row">
+    <h1>Căutare stoc</h1>
+    <a class="nav-link" href="/catalog.html">Catalog →</a>
+  </div>
   <div class="search-row">
     <input id="search" type="text" placeholder="Caută după cod, denumire, culoare, brand…" autofocus />
     <button id="scan-btn" aria-label="Scanează cod de bare">📷</button>
