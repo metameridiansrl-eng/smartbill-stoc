@@ -67,7 +67,11 @@ export default async function handler(req, res) {
     // Cache scurt la nivel de CDN (60s) - suficient pentru cautari in magazin,
     // dar tot pare "live" pentru vanzatori.
     res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=30");
-    res.status(200).json({ stock: stockMap, updatedAt: new Date().toISOString() });
+    res.status(200).json({
+      stock: stockMap,
+      updatedAt: new Date().toISOString(),
+      _debugRawSample: JSON.stringify(data).slice(0, 1500),
+    });
   } catch (err) {
     res.status(500).json({ error: "Eroare la interogarea SmartBill.", detail: String(err) });
   }
