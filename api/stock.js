@@ -51,27 +51,25 @@ export default async function handler(req, res) {
     // Normalizam raspunsul intr-o forma simpla: { "COD-SKU": cantitate, ... }
     // Structura exacta returnata de SmartBill poate varia usor; de aceea
     // cautam mai multe nume posibile de camp pentru cod si cantitate.
-    const list = Array.isArray(data) ? data : data.list || data.products || [];
+        const warehouseGroups = Array.isArray(data.list) ? data.list : [];
 
     const stockMap = {};
-    for (const item of list) {
-      const code = item.productCode || item.code || item.cod || item.sku;
-      const qty =
-        item.quantity ?? item.stock ?? item.cantitate ?? item.availableQuantity ?? 0;
-      if (code) {
-        const key = String(code).trim().toUpperCase();
-        stockMap[key] = (stockMap[key] || 0) + Number(qty);
+    for (const group of warehouseGroups) {
+      const items = group.products || [];
+      for (const item of items) {
+        const code = item.productCode || item.code;
+        const qty = item.quantity ?? 0;
+        if (code) {
+          const key = String(code).trim().toUpperCase();
+          stockMap[key] = (stockMap[key] || 0) + Number(qty);
+        }
       }
     }
 
     // Cache scurt la nivel de CDN (60s) - suficient pentru cautari in magazin,
     // dar tot pare "live" pentru vanzatori.
     res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=30");
-    res.status(200).json({
-      stock: stockMap,
-      updatedAt: new Date().toISOString(),
-      _debugRawSample: JSON.stringify(data).slice(0, 1500),
-    });
+    res.status(200).json({ stock: stockMap, updatedAt: new Date().toISOString() });
   } catch (err) {
     res.status(500).json({ error: "Eroare la interogarea SmartBill.", detail: String(err) });
   }
