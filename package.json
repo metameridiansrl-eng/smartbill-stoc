@@ -1,0 +1,9 @@
+{
+  "name": "smartbill-stoc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cautare stoc pentru vanzatori: combina stocul live din SmartBill cu baza de date interna de produse.",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
