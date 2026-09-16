@@ -49,9 +49,9 @@ function buildModels() {
   models = Array.from(map.entries()).map(([name, variants]) => ({
     name,
     variants,
-    brand: (variants[0]["BRAND"] || "").trim(),
-    familia: (variants[0]["FAMILIA"] || "").trim(),
-    categoria: (variants[0]["CATEGORIA (M/F/C)"] || "").trim(),
+    brand: String(variants[0]["BRAND"] || "").trim(),
+    familia: String(variants[0]["FAMILIA"] || "").trim(),
+    categoria: String(variants[0]["CATEGORIA (M/F/C)"] || "").trim(),
     price: variants[0]["PRET UNITAR CU TVA (LEI)"] || "",
   }));
 }
