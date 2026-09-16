@@ -4,6 +4,10 @@
   "private": true,
   "description": "Cautare stoc pentru vanzatori: combina stocul live din SmartBill cu baza de date interna de produse.",
   "scripts": {
+    "build": "node scripts/build-products.js",
     "dev": "vercel dev"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
   }
 }
