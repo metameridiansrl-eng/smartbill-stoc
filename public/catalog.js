@@ -46,7 +46,7 @@ function buildModels() {
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(p);
   }
- models = Array.from(map.entries()).map(([name, variants]) => ({
+  models = Array.from(map.entries()).map(([name, variants]) => ({
     name,
     variants,
     brand: (variants[0]["BRAND"] || "").trim(),
