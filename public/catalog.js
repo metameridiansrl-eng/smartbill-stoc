@@ -46,12 +46,12 @@ function buildModels() {
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(p);
   }
-  models = Array.from(map.entries()).map(([name, variants]) => ({
+ models = Array.from(map.entries()).map(([name, variants]) => ({
     name,
     variants,
-    brand: variants[0]["BRAND"] || "",
-    familia: variants[0]["FAMILIA"] || "",
-    categoria: variants[0]["CATEGORIA (M/F/C)"] || "",
+    brand: (variants[0]["BRAND"] || "").trim(),
+    familia: (variants[0]["FAMILIA"] || "").trim(),
+    categoria: (variants[0]["CATEGORIA (M/F/C)"] || "").trim(),
     price: variants[0]["PRET UNITAR CU TVA (LEI)"] || "",
   }));
 }
