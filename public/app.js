@@ -95,7 +95,7 @@ function renderProductWithVariants(product) {
   resultsEl.appendChild(buildRow(product, true));
 
   const variants = findVariants(product).sort((a, b) =>
-    (a["MARIME"] || "").localeCompare(b["MARIME"] || "")
+    String(a["MARIME"] || "").localeCompare(String(b["MARIME"] || ""))
   );
 
   if (variants.length > 0) {
