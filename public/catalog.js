@@ -115,7 +115,7 @@ function buildCard(model) {
     box.className = "variants-box";
     box.innerHTML = `<p class="vlabel">Variante (${model.variants.length})</p>`;
     const sorted = [...model.variants].sort((a, b) =>
-      (a["MARIME"] || "").localeCompare(b["MARIME"] || "")
+      String(a["MARIME"] || "").localeCompare(String(b["MARIME"] || ""))
     );
     for (const v of sorted) {
       const q = getStock(v["COD SKU"]);
