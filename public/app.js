@@ -8,18 +8,6 @@ let products = [];
 let stockMap = {};
 let stockUpdatedAt = null;
 
-// Coloanele afisate pe fiecare card de rezultat (in ordinea asta).
-const DISPLAY_FIELDS = [
-  "DENUMIRE SCURTA",
-  "COD SKU",
-  "BRAND",
-  "FAMILIA",
-  "CULOARE LUNG",
-  "MARIME",
-  "CATEGORIA (M/F/C)",
-  "FURNIZOR/PRODUCATOR",
-];
-
 async function loadProducts() {
   const res = await fetch("/data/products.json");
   products = await res.json();
@@ -44,12 +32,12 @@ function normalize(str) {
   return String(str || "")
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, ""); // scoate diacriticele, ca vânzătorul să nu trebuiască să le scrie
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 function getStock(codSku) {
   const key = String(codSku || "").trim().toUpperCase();
-  return stockMap[key] ?? null; // null = nu am gasit info de stoc pentru acest cod
+  return stockMap[key] ?? null;
 }
 
 function buildRow(p, isMainMatch) {
@@ -67,12 +55,19 @@ function buildRow(p, isMainMatch) {
     <div class="main-info">
       <div class="name">${escapeHtml(p["DENUMIRE SCURTA"] || p["DENUMIRE PRODUS"] || "—")}</div>
       <div class="meta">${escapeHtml(p["COD SKU"] || "")} ${meta ? "· " + escapeHtml(meta) : ""}</div>
+      <button class="print-label-btn" type="button">🖨️ Etichetă</button>
     </div>
     <div class="stock">
       <div class="qty ${qtyClass}">${qtyLabel}</div>
       <div class="price">${p["PRET UNITAR CU TVA (LEI)"] ? p["PRET UNITAR CU TVA (LEI)"] + " lei" : ""}</div>
     </div>
   `;
+
+  row.querySelector(".print-label-btn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    window.printLabel(p);
+  });
+
   return row;
 }
 
@@ -117,7 +112,6 @@ function render(list) {
     return;
   }
 
-  // Limitam la 60 de rezultate afisate deodata, ca lista sa ramana rapida pe telefon.
   const shown = list.slice(0, 60);
 
   for (const p of shown) {
@@ -175,17 +169,14 @@ async function startScan() {
   try {
     html5QrCode = new Html5Qrcode("reader");
     await html5QrCode.start(
-      { facingMode: "environment" }, // camera din spate
+      { facingMode: "environment" },
       { fps: 10, qrbox: { width: 250, height: 150 } },
       (decodedText) => {
-        // Cod gasit: punem valoarea in cautare, aratam produsul + variantele lui, si inchidem camera.
         searchInput.value = decodedText;
         performSearch(decodedText);
         stopScan();
       },
-      () => {
-        // se apeleaza foarte des cat timp nu s-a gasit inca niciun cod - ignoram
-      }
+      () => {}
     );
   } catch (err) {
     alert("Nu am putut porni camera. Verifică că ai dat acces la cameră pentru acest site, în Setări Safari.");
@@ -199,9 +190,7 @@ async function stopScan() {
     try {
       await html5QrCode.stop();
       html5QrCode.clear();
-    } catch (err) {
-      // camera poate fi deja oprita - nu e o problema
-    }
+    } catch (err) {}
     html5QrCode = null;
   }
   scannerOverlay.style.display = "none";
@@ -223,7 +212,6 @@ async function init() {
 
 init();
 
-// Reimprospatam stocul din 2 in 2 minute, cat timp pagina ramane deschisa in magazin.
 setInterval(async () => {
   await loadStock();
   if (searchInput.value) performSearch(searchInput.value);
