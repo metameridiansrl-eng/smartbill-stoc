@@ -155,4 +155,44 @@ function furnizorText(p) {
 }
 function formatPrice(val) {
   const num = parseFloat(val);
-  if (isNaN(num)) return
+  if (isNaN(num)) return (val || "").toString();
+  return num.toFixed(2).replace(/\.00$/, "") + " LEI";
+}
+
+function barcodeDataUrl(sku) {
+  try {
+    if (typeof JsBarcode === "undefined") throw new Error("JsBarcode nu e incarcat");
+    const canvas = document.createElement("canvas");
+    JsBarcode(canvas, (sku || "0000000000").toString(), {
+      format: "CODE128", width: 2, height: 60, displayValue: false, margin: 0,
+    });
+    return canvas.toDataURL("image/png");
+  } catch (e) {
+    console.warn("Barcode error", sku, e);
+    return null;
+  }
+}
+
+function shrinkBlockToFit(el, maxHeightMm, minFontPt) {
+  if (!el) return;
+  const maxHeightPx = maxHeightMm * 3.7795275591;
+  let fontSize = parseFloat(getComputedStyle(el).fontSize);
+  const floorPx = minFontPt * 1.3333333;
+  let guard = 0;
+  while (el.scrollHeight > maxHeightPx + 0.5 && fontSize > floorPx && guard < 40) {
+    fontSize -= 0.25;
+    el.style.fontSize = fontSize + "px";
+    guard++;
+  }
+}
+
+function doPrint(product, brandEntry, fabricatIn) {
+  ensureLabelStyles();
+  const area = ensurePrintArea();
+
+  const p = {
+    brand: product["BRAND"] || "",
+    denumire: product["DENUMIRE PRODUS"] || product["DENUMIRE SCURTA"] || "",
+    codFurnizor: product["COD PRODUCATOR"] || "",
+    culoare: product["CULOARE SCURT"] || product["CULOARE LUNG"] || "",
+    masura: product["MARIME"] ||
