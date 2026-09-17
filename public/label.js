@@ -1,4 +1,4 @@
-// label.js - printare eticheta produs (40mm x 30mm)
+// label.js - printare eticheta produs (40mm x 30mm), design preluat din tool-ul de etichete RFB
 
 let brandsData = null;
 let brandsPromise = null;
@@ -7,10 +7,7 @@ function loadBrands() {
   if (!brandsPromise) {
     brandsPromise = fetch("data/brands.json")
       .then((r) => r.json())
-      .then((data) => {
-        brandsData = data;
-        return data;
-      })
+      .then((data) => { brandsData = data; return data; })
       .catch((err) => {
         console.error("Nu am putut incarca brands.json", err);
         brandsData = [];
@@ -46,12 +43,10 @@ window.printLabel = function (product) {
       alert(`Nu am gasit date de contact pentru brandul "${brandName}" in contacte_branduri.xlsx.`);
       return;
     }
-
     if (entries.length === 1) {
       askFabricatInSiPrint(product, entries[0]);
       return;
     }
-
     showCompanyPicker(product, entries);
   });
 };
@@ -104,28 +99,23 @@ function ensureLabelStyles() {
       #label-print-area, #label-print-area * { visibility: visible; }
       #label-print-area {
         display: block !important;
-        position: absolute;
-        top: 0; left: 0;
-        width: 40mm; height: 30mm;
+        position: absolute; top: 0; left: 0;
       }
-      .label-box {
-        width: 40mm; height: 30mm;
-        box-sizing: border-box;
-        padding: 1.5mm 2mm;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        font-family: Arial, sans-serif;
+      .plabel-print {
+        width: 40mm; height: 30mm; padding: 1mm 1.5mm;
+        display: flex; flex-direction: column; justify-content: space-between;
+        overflow: hidden; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
       }
-      .label-brand { font-size: 8pt; font-weight: bold; text-transform: uppercase; }
-      .label-name { font-size: 6.5pt; line-height: 1.15; max-height: 8mm; overflow: hidden; }
-      .label-row { display: flex; justify-content: space-between; font-size: 6pt; }
-      .label-price { font-size: 8pt; font-weight: bold; text-align: right; }
-      .label-barcode { text-align: center; }
-      .label-barcode svg { width: 36mm; height: 7mm; }
-      .label-barcode-text { font-size: 5.5pt; }
-      .label-origin { font-size: 5pt; }
-      .label-furnizor, .label-distribuitor { font-size: 4.3pt; line-height: 1.1; }
+      .plabel-print .name-block { font-size: 7pt; font-weight: bold; line-height: 1.15; overflow: hidden; flex-shrink: 0; }
+      .plabel-print .barcode-row { width: 100%; height: 6mm; overflow: hidden; text-align: center; flex-shrink: 0; }
+      .plabel-print .barcode-row img { display: block; width: 100%; height: 6mm; }
+      .plabel-print .sku-pret-row { display: flex; justify-content: space-between; align-items: baseline; flex-shrink: 0; }
+      .plabel-print .sku { font-size: 6.5pt; }
+      .plabel-print .pret { font-size: 10pt; font-weight: bold; }
+      .plabel-print .fabricat { font-size: 5.2pt; color: #444; flex-shrink: 0; }
+      .plabel-print .furnizor-block, .plabel-print .distribuitor-block {
+        font-size: 5.2pt; line-height: 1.15; overflow: hidden; flex-shrink: 0;
+      }
     }
 
     .label-picker-overlay {
@@ -155,55 +145,14 @@ function ensurePrintArea() {
   return area;
 }
 
-const DISTRIBUITOR = "ONZE SHOWROOM S.R.L., Sediu social: Bucuresti, Sector 2, Str. Suvenir nr. 4";
+const DISTRIBUITOR = "Distribuitor: ONZE SHOWROOM SRL — Str. Suvenir nr. 4, București";
 
-function buildLabelHtml(product, brandEntry, fabricatIn) {
-  const brand = product["BRAND"] || "";
-  const denumire = product["DENUMIRE PRODUS"] || product["DENUMIRE SCURTA"] || "";
-  const codFurnizor = product["COD PRODUCATOR"] || "";
-  const culoare = product["CULOARE SCURT"] || product["CULOARE LUNG"] || "";
-  const marime = product["MARIME"] || "";
-  const sku = product["COD SKU"] || "";
-  const pret = product["PRET UNITAR CU TVA (LEI)"] || "";
-  const firma = brandEntry ? brandEntry.firma : "";
-  const adresa = brandEntry ? brandEntry.adresaEticheta : "";
-
-  return `
-    <div class="label-box">
-      <div class="label-brand">${escapeHtml(brand)}</div>
-      <div class="label-name">${escapeHtml(denumire)}${codFurnizor ? " (" + escapeHtml(codFurnizor) + ")" : ""}</div>
-      <div class="label-row">
-        <span>${escapeHtml(culoare)}${culoare && marime ? " / " : ""}${escapeHtml(marime)}</span>
-        <span class="label-price">${escapeHtml(String(pret))} lei</span>
-      </div>
-      <div class="label-barcode">
-        <svg id="label-barcode-svg"></svg>
-        <div class="label-barcode-text">${escapeHtml(sku)}</div>
-      </div>
-      <div class="label-origin">Fabricat in: ${escapeHtml(fabricatIn || "")}</div>
-      <div class="label-furnizor">Furnizor: ${escapeHtml(firma)}, ${escapeHtml(adresa)}</div>
-      <div class="label-distribuitor">Distribuitor: ${escapeHtml(DISTRIBUITOR)}</div>
-    </div>
-  `;
+function nameBlockText(p) {
+  return [p.brand, p.denumire, p.codFurnizor, p.culoare, p.masura].filter(Boolean).join(" · ");
 }
-
-function doPrint(product, brandEntry, fabricatIn) {
-  ensureLabelStyles();
-  const area = ensurePrintArea();
-  area.innerHTML = buildLabelHtml(product, brandEntry, fabricatIn);
-
-  if (window.JsBarcode) {
-    try {
-      window.JsBarcode("#label-barcode-svg", String(product["COD SKU"] || ""), {
-        format: "CODE128",
-        displayValue: false,
-        height: 26,
-        margin: 0,
-      });
-    } catch (e) {
-      console.error("Eroare generare cod de bare", e);
-    }
-  }
-
-  setTimeout(() => window.print(), 50);
+function furnizorText(p) {
+  return ["Furnizor: " + (p.furnizor || ""), p.adresaFurnizor].filter(Boolean).join(" — ");
 }
+function formatPrice(val) {
+  const num = parseFloat(val);
+  if (isNaN(num)) return
