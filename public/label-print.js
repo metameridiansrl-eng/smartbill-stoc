@@ -4,7 +4,7 @@ function doPrint(product, brandEntry, fabricatIn) {
 
   const p = {
     brand: product["BRAND"] || "",
-    denumire: product["DENUMIRE PRODUS"] || product["DENUMIRE SCURTA"] || "",
+    denumire: product["DENUMIRE SCURTA"] || product["DENUMIRE PRODUS"] || "",
     codFurnizor: product["COD PRODUCATOR"] || "",
     culoare: product["CULOARE SCURT"] || product["CULOARE LUNG"] || "",
     masura: product["MARIME"] || "",
