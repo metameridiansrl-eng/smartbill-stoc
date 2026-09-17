@@ -95,11 +95,9 @@ function ensureLabelStyles() {
 
     @media print {
       @page { size: 40mm 30mm; margin: 0; }
-      body * { visibility: hidden; }
-      #label-print-area, #label-print-area * { visibility: visible; }
+      body > *:not(#label-print-area) { display: none !important; }
       #label-print-area {
         display: block !important;
-        position: absolute; top: 0; left: 0;
       }
       .plabel-print {
         width: 40mm; height: 30mm; padding: 1mm 1.5mm;
