@@ -45,7 +45,7 @@ function buildRow(p, isMainMatch) {
   const qtyClass = qty === null ? "" : qty > 0 ? "ok" : "zero";
   const qtyLabel = qty === null ? "?" : qty;
 
-  const meta = [p["CULOARE LUNG"], p["MARIME"], p["BRAND"], p["FAMILIA"]]
+  const meta = [p["CULOARE LUNG"], p["MARIME"], p["NUME BRAND"], p["FAMILIA"]]
     .filter(Boolean)
     .join(" · ");
 
@@ -59,7 +59,7 @@ function buildRow(p, isMainMatch) {
     </div>
     <div class="stock">
       <div class="qty ${qtyClass}">${qtyLabel}</div>
-      <div class="price">${p["PRET UNITAR CU TVA (LEI)"] ? p["PRET UNITAR CU TVA (LEI)"] + " lei" : ""}</div>
+      <div class="price">${p["PRET UNITAR CU TVA CE APARE PE ETICHETA"] ? p["PRET UNITAR CU TVA CE APARE PE ETICHETA"] + " lei" : ""}</div>
     </div>
   `;
 
@@ -143,76 +143,4 @@ function search(query) {
 
   return products.filter((p) => {
     const haystack = normalize(Object.values(p).join(" "));
-    return terms.every((t) => haystack.includes(t));
-  });
-}
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[c]));
-}
-
-searchInput.addEventListener("input", () => {
-  performSearch(searchInput.value);
-});
-
-// --- Scanare cod de bare cu camera telefonului ---
-
-const scanBtn = document.getElementById("scan-btn");
-const scannerOverlay = document.getElementById("scanner-overlay");
-const scanCloseBtn = document.getElementById("scan-close");
-let html5QrCode = null;
-
-async function startScan() {
-  scannerOverlay.style.display = "flex";
-  try {
-    html5QrCode = new Html5Qrcode("reader");
-    await html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 150 } },
-      (decodedText) => {
-        searchInput.value = decodedText;
-        performSearch(decodedText);
-        stopScan();
-      },
-      () => {}
-    );
-  } catch (err) {
-    alert("Nu am putut porni camera. Verifică că ai dat acces la cameră pentru acest site, în Setări Safari.");
-    console.error(err);
-    scannerOverlay.style.display = "none";
-  }
-}
-
-async function stopScan() {
-  if (html5QrCode) {
-    try {
-      await html5QrCode.stop();
-      html5QrCode.clear();
-    } catch (err) {}
-    html5QrCode = null;
-  }
-  scannerOverlay.style.display = "none";
-}
-
-scanBtn.addEventListener("click", startScan);
-scanCloseBtn.addEventListener("click", stopScan);
-
-async function init() {
-  statusEl.textContent = "Se încarcă produsele…";
-  await loadProducts();
-  statusEl.textContent = "Se încarcă stocul din SmartBill…";
-  await loadStock();
-  statusEl.textContent = `${products.length} produse · stoc actualizat: ${
-    stockUpdatedAt ? new Date(stockUpdatedAt).toLocaleTimeString("ro-RO") : "indisponibil"
-  }`;
-  searchInput.focus();
-}
-
-init();
-
-setInterval(async () => {
-  await loadStock();
-  if (searchInput.value) performSearch(searchInput.value);
-}, 120000);
+    return terms.every((t) =>
