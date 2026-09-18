@@ -5,10 +5,9 @@ const gridEl = document.getElementById("grid");
 const statusEl = document.getElementById("status");
 const brandSelect = document.getElementById("filter-brand");
 const familiaSelect = document.getElementById("filter-familia");
-const categoriaSelect = document.getElementById("filter-categoria");
 
 let products = [];
-let models = []; // { name, variants:[...], brand, familia, categoria, price }
+let models = []; // { name, variants:[...], brand, familia, price }
 let stockMap = {};
 let expandedName = null; // numele modelului deschis in acest moment (un singur card deschis odata)
 
@@ -49,10 +48,9 @@ function buildModels() {
   models = Array.from(map.entries()).map(([name, variants]) => ({
     name,
     variants,
-    brand: String(variants[0]["BRAND"] || "").trim(),
+    brand: String(variants[0]["NUME BRAND"] || "").trim(),
     familia: String(variants[0]["FAMILIA"] || "").trim(),
-    categoria: String(variants[0]["CATEGORIA (M/F/C)"] || "").trim(),
-    price: variants[0]["PRET UNITAR CU TVA (LEI)"] || "",
+    price: variants[0]["PRET UNITAR CU TVA CE APARE PE ETICHETA"] || "",
   }));
 }
 
@@ -71,7 +69,6 @@ function fillSelect(select, values, allLabel) {
 function setupFilters() {
   fillSelect(brandSelect, [...new Set(models.map((m) => m.brand).filter(Boolean))].sort(), "Brand: toate");
   fillSelect(familiaSelect, [...new Set(models.map((m) => m.familia).filter(Boolean))].sort(), "Familia: toate");
-  fillSelect(categoriaSelect, [...new Set(models.map((m) => m.categoria).filter(Boolean))].sort(), "Categoria: toate");
 }
 
 function modelStockSummary(model) {
@@ -147,7 +144,6 @@ function escapeHtml(str) {
 function matchesFilters(model) {
   if (brandSelect.value && model.brand !== brandSelect.value) return false;
   if (familiaSelect.value && model.familia !== familiaSelect.value) return false;
-  if (categoriaSelect.value && model.categoria !== categoriaSelect.value) return false;
   return true;
 }
 
@@ -177,7 +173,6 @@ function render() {
 searchInput.addEventListener("input", render);
 brandSelect.addEventListener("change", render);
 familiaSelect.addEventListener("change", render);
-categoriaSelect.addEventListener("change", render);
 
 async function init() {
   statusEl.textContent = "Se încarcă produsele…";
