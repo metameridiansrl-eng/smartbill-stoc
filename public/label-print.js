@@ -3,13 +3,13 @@ function doPrint(product, brandEntry, fabricatIn) {
   const area = ensurePrintArea();
 
   const p = {
-    brand: product["BRAND"] || "",
+    brand: product["NUME BRAND"] || "",
     denumire: product["DENUMIRE SCURTA"] || product["DENUMIRE PRODUS"] || "",
-    codFurnizor: product["COD PRODUCATOR"] || "",
+    codFurnizor: product["COD INTERN PRODUCATOR"] || "",
     culoare: product["CULOARE SCURT"] || product["CULOARE LUNG"] || "",
     masura: product["MARIME"] || "",
     sku: product["COD SKU"] || "",
-    pret: product["PRET UNITAR CU TVA (LEI)"] || "",
+    pret: product["PRET UNITAR CU TVA CE APARE PE ETICHETA"] || "",
     fabricat: fabricatIn || "",
     furnizor: brandEntry ? brandEntry.firma : "",
     adresaFurnizor: brandEntry ? brandEntry.adresaEticheta : "",
