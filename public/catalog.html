@@ -1,193 +1,170 @@
-// catalog.js — ruleaza in browser. NU contine niciun secret.
-
-const searchInput = document.getElementById("search");
-const gridEl = document.getElementById("grid");
-const statusEl = document.getElementById("status");
-const brandSelect = document.getElementById("filter-brand");
-const familiaSelect = document.getElementById("filter-familia");
-
-let products = [];
-let models = []; // { name, variants:[...], brand, familia, price }
-let stockMap = {};
-let expandedName = null;
-
-async function loadProducts() {
-  const res = await fetch("/data/products.json");
-  products = await res.json();
-}
-
-async function loadStock() {
-  try {
-    const res = await fetch("/api/stock");
-    const data = await res.json();
-    if (data.stock) stockMap = data.stock;
-  } catch (err) {
-    console.error("Nu am putut încărca stocul:", err);
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Catalog produse</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card: #ffffff;
+    --border: #e4e2dd;
+    --text: #2b2a27;
+    --muted: #767268;
+    --accent: #b45309;
+    --ok: #2f7d4f;
+    --zero: #c0392b;
   }
-}
-
-function normalize(str) {
-  return String(str || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
-function getStock(codSku) {
-  const key = String(codSku || "").trim().toUpperCase();
-  return stockMap[key] ?? null;
-}
-
-function buildModels() {
-  const map = new Map();
-  for (const p of products) {
-    const key = p["DENUMIRE SCURTA"] || p["COD SKU"];
-    if (!map.has(key)) map.set(key, []);
-    map.get(key).push(p);
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
   }
-  models = Array.from(map.entries()).map(([name, variants]) => ({
-    name,
-    variants,
-    brand: String(variants[0]["NUME BRAND"] || "").trim(),
-    familia: String(variants[0]["FAMILIA"] || "").trim(),
-    price: variants[0]["PRET UNITAR CU TVA CE APARE PE ETICHETA"] || "",
-  }));
-}
-
-function fillSelect(select, values, allLabel) {
-  const current = select.value;
-  select.innerHTML = `<option value="">${allLabel}</option>`;
-  for (const v of values) {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = v;
-    select.appendChild(opt);
+  header {
+    padding: 20px 16px 12px;
+    max-width: 1100px;
+    margin: 0 auto;
   }
-  select.value = current;
-}
-
-function setupFilters() {
-  fillSelect(brandSelect, [...new Set(models.map((m) => m.brand).filter(Boolean))].sort(), "Brand: toate");
-  fillSelect(familiaSelect, [...new Set(models.map((m) => m.familia).filter(Boolean))].sort(), "Familia: toate");
-}
-
-function modelStockSummary(model) {
-  let total = 0;
-  let known = false;
-  for (const v of model.variants) {
-    const q = getStock(v["COD SKU"]);
-    if (q !== null) {
-      known = true;
-      total += q;
-    }
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
   }
-  return { total, known };
-}
-
-function buildCard(model) {
-  const { total, known } = modelStockSummary(model);
-  const isOpen = expandedName === model.name;
-
-  const card = document.createElement("div");
-  card.className = "card";
-
-  const badgeClass = !known ? "" : total > 0 ? "ok" : "zero";
-  const badgeLabel = !known
-    ? `${model.variants.length} variante`
-    : total > 0
-    ? `${model.variants.length} variante`
-    : "stoc epuizat";
-
-  card.innerHTML = `
-    <div class="card-top">
-      <div class="name" style="margin:0;">${escapeHtml(model.name)}</div>
-      <div class="badge ${badgeClass}">${badgeLabel}</div>
-    </div>
-    <p class="brand">${escapeHtml(model.brand)}</p>
-    <p class="price">${model.price ? model.price + " lei" : ""}</p>
-  `;
-
-  if (isOpen) {
-    const box = document.createElement("div");
-    box.className = "variants-box";
-    box.innerHTML = `<p class="vlabel">Variante (${model.variants.length})</p>`;
-    const sorted = [...model.variants].sort((a, b) =>
-      String(a["MARIME"] || "").localeCompare(String(b["MARIME"] || ""))
-    );
-    for (const v of sorted) {
-      const q = getStock(v["COD SKU"]);
-      const qClass = q === null ? "" : q > 0 ? "ok" : "zero";
-      const qLabel = q === null ? "?" : q;
-      const row = document.createElement("div");
-      row.className = "variant-row";
-      const label = [v["MARIME"], v["CULOARE LUNG"], v["COD SKU"]].filter(Boolean).join(" · ");
-      row.innerHTML = `<span>${escapeHtml(label)}</span><span class="qty ${qClass}">${qLabel}</span>`;
-      box.appendChild(row);
-    }
-    card.appendChild(box);
+  h1 {
+    font-size: 20px;
+    margin: 0;
   }
-
-  card.addEventListener("click", () => {
-    expandedName = isOpen ? null : model.name;
-    render();
-  });
-
-  return card;
-}
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[c]));
-}
-
-function matchesFilters(model) {
-  if (brandSelect.value && model.brand !== brandSelect.value) return false;
-  if (familiaSelect.value && model.familia !== familiaSelect.value) return false;
-  return true;
-}
-
-function matchesSearch(model, query) {
-  const q = normalize(query);
-  if (!q) return true;
-  const terms = q.split(/\s+/).filter(Boolean);
-  const haystack = normalize(
-    [model.name, model.brand, model.familia, ...model.variants.flatMap((v) => Object.values(v))].join(" ")
-  );
-  return terms.every((t) => haystack.includes(t));
-}
-
-function render() {
-  const filtered = models.filter((m) => matchesFilters(m) && matchesSearch(m, searchInput.value));
-
-  gridEl.innerHTML = "";
-  if (filtered.length === 0) {
-    gridEl.innerHTML = `<div class="empty">Niciun model găsit.</div>`;
-    return;
+  .nav-link {
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
   }
-  for (const m of filtered) {
-    gridEl.appendChild(buildCard(m));
+  #search {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 17px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    background: var(--card);
+    margin-bottom: 10px;
   }
-}
+  #search:focus { border-color: var(--accent); }
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .filters select {
+    flex: 1;
+    min-width: 130px;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+  }
+  #status {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 12px 16px 40px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+  }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge.ok { background: #e7f3ec; color: var(--ok); }
+  .badge.zero { background: #fbeaea; color: var(--zero); }
+  .card .name {
+    font-weight: 600;
+    font-size: 15px;
+    margin: 10px 0 2px;
+  }
+  .card .brand {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+  }
+  .card .price {
+    font-size: 15px;
+    margin: 10px 0 0;
+  }
+  .variants-box {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .variants-box .vlabel {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 0 0 2px;
+  }
+  .variant-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .variant-row .qty.ok { color: var(--ok); }
+  .variant-row .qty.zero { color: var(--zero); }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    margin-top: 40px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
 
-searchInput.addEventListener("input", render);
-brandSelect.addEventListener("change", render);
-familiaSelect.addEventListener("change", render);
+<header>
+  <div class="title-row">
+    <h1>Catalog produse</h1>
+    <a class="nav-link" href="/">← Căutare stoc</a>
+  </div>
+  <input id="search" type="text" placeholder="Caută un model, brand, culoare…" autofocus />
+  <div class="filters">
+    <select id="filter-brand"><option value="">Brand: toate</option></select>
+    <select id="filter-familia"><option value="">Familia: toate</option></select>
+  </div>
+  <div id="status">Se încarcă…</div>
+</header>
 
-async function init() {
-  statusEl.textContent = "Se încarcă produsele…";
-  await loadProducts();
-  buildModels();
-  setupFilters();
-  statusEl.textContent = "Se încarcă stocul din SmartBill…";
-  await loadStock();
-  statusEl.textContent = `${models.length} modele · ${products.length} variante în total`;
-  render();
-}
+<main id="grid" class="grid"></main>
 
-init();
-
-setInterval(async () => {
-  await loadStock();
-  render();
-}, 120000);
+<script src="catalog.js"></script>
+</body>
+</html>
