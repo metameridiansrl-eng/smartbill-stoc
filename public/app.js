@@ -125,22 +125,3 @@ function render(list) {
     resultsEl.appendChild(more);
   }
 }
-
-function performSearch(query) {
-  const exact = findExactBySku(query);
-  if (exact) {
-    renderProductWithVariants(exact);
-  } else {
-    render(search(query));
-  }
-}
-
-function search(query) {
-  const q = normalize(query);
-  if (!q) return [];
-
-  const terms = q.split(/\s+/).filter(Boolean);
-
-  return products.filter((p) => {
-    const haystack = normalize(Object.values(p).join(" "));
-    return terms.every((t) =>
