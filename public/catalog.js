@@ -9,7 +9,7 @@ const familiaSelect = document.getElementById("filter-familia");
 let products = [];
 let models = []; // { name, variants:[...], brand, familia, price }
 let stockMap = {};
-let expandedName = null; // numele modelului deschis in acest moment (un singur card deschis odata)
+let expandedName = null;
 
 async function loadProducts() {
   const res = await fetch("/data/products.json");
@@ -120,7 +120,7 @@ function buildCard(model) {
       const qLabel = q === null ? "?" : q;
       const row = document.createElement("div");
       row.className = "variant-row";
-      const label = [v["MARIME"], v["CULOARE LUNG"]].filter(Boolean).join(" · ") || v["COD SKU"];
+      const label = [v["MARIME"], v["CULOARE LUNG"], v["COD SKU"]].filter(Boolean).join(" · ");
       row.innerHTML = `<span>${escapeHtml(label)}</span><span class="qty ${qClass}">${qLabel}</span>`;
       box.appendChild(row);
     }
