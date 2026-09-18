@@ -36,7 +36,7 @@ function escapeHtml(str) {
 
 window.printLabel = function (product) {
   loadBrands().then(() => {
-    const brandName = product["BRAND"] || "";
+    const brandName = product["NUME BRAND"] || "";
     const entries = findBrandEntries(brandName);
 
     if (entries.length === 0) {
@@ -63,7 +63,7 @@ function showCompanyPicker(product, entries) {
   overlay.className = "label-picker-overlay";
   overlay.innerHTML = `
     <div class="label-picker-box">
-      <h3>Alege firma pentru "${escapeHtml(product["BRAND"] || "")}"</h3>
+      <h3>Alege firma pentru "${escapeHtml(product["NUME BRAND"] || "")}"</h3>
       <div class="label-picker-options"></div>
       <button class="label-picker-cancel" type="button">Anuleaza</button>
     </div>
