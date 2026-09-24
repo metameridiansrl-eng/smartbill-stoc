@@ -90,7 +90,7 @@ select.row-firma { padding: 4px; border: 1px solid var(--border); border-radius:
 .plabel-print .sku { font-size: 6.5pt; }
 .plabel-print .pret { font-size: 10pt; font-weight: bold; }
 .plabel-print .pret-block { display: flex; flex-direction: row; align-items: baseline; gap: 1.5mm; }
-.plabel-print .pret-vechi { font-size: 10pt; color: #888; text-decoration: line-through; }
+.plabel-print .pret-vechi { font-size: 10pt; font-weight: bold; color: #888; text-decoration: line-through; }
 .plabel-print .pret-nou { font-size: 10pt; font-weight: bold; color: var(--zero); }
 .plabel-print .fabricat { font-size: 5.2pt; color: #444; flex-shrink: 0; }
 .plabel-print .furnizor-block, .plabel-print .distribuitor-block {
