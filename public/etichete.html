@@ -1,1 +1,73 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Etichete în masă</title>
+<link rel="stylesheet" href="etichete.css" />
+</head>
+<body>
 
+<header>
+  <div class="title-row">
+    <h1>Etichete în masă</h1>
+    <div>
+      <a class="nav-link" href="/">Căutare</a>
+      <a class="nav-link" href="/catalog.html">Catalog</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="eyebrow">Scanează produs</div>
+    <div class="scan-row">
+      <input id="manualSku" type="text" placeholder="Scanează sau scrie codul SKU…" autocomplete="off" />
+      <button id="scan-btn" type="button" aria-label="Scanează">📷</button>
+    </div>
+    <div id="scanStatus"></div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">Listă etichete</div>
+    <div class="stats">
+      <div class="stat"><div class="num" id="statProduse">0</div><div class="lbl">Produse</div></div>
+      <div class="stat"><div class="num" id="statEtichete">0</div><div class="lbl">Etichete total</div></div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Produs</th><th>Cant.</th><th>Fabricat în</th><th>Firmă</th><th></th></tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr class="empty-row"><td colspan="5">Niciun produs încă — scanează ceva mai sus.</td></tr>
+      </tbody>
+    </table>
+    <div class="btn-row">
+      <button class="btn btn-light" id="exportBtn" type="button">Exportă .xlsx</button>
+      <button class="btn btn-light" id="importBtn" type="button">Importă .xlsx</button>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" />
+    <div id="ioStatus"></div>
+    <div class="btn-row">
+      <button class="btn btn-dark" id="printBtn" type="button" disabled>Printează toate etichetele</button>
+    </div>
+  </div>
+</main>
+
+<div id="scanner-overlay" class="scanner-overlay" style="display:none;">
+  <div class="scan-hint">Îndreaptă camera spre codul de bare</div>
+  <div id="reader"></div>
+  <button id="scan-close" type="button">✕ Închide</button>
+</div>
+
+<div id="printArea"></div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="etichete.js"></script>
+<script src="etichete-print.js"></script>
+<script src="etichete-scan.js"></script>
+<script src="etichete-io.js"></script>
+</body>
+</html>
