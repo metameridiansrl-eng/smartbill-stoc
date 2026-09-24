@@ -41,6 +41,7 @@
     font-size: 13px;
     color: var(--accent);
     text-decoration: none;
+    margin-left: 12px;
   }
   #search {
     width: 100%;
@@ -136,10 +137,23 @@
   .variant-row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 13px;
+    gap: 8px;
   }
+  .variant-row .vinfo { min-width: 0; }
   .variant-row .qty.ok { color: var(--ok); }
   .variant-row .qty.zero { color: var(--zero); }
+  .variant-row .print-label-btn {
+    margin-top: 4px;
+    font-size: 11px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+  }
+  .variant-row .print-label-btn:active { background: #f0efeb; }
   .empty {
     text-align: center;
     color: var(--muted);
@@ -153,7 +167,9 @@
 <header>
   <div class="title-row">
     <h1>Catalog produse</h1>
-    <a class="nav-link" href="/">← Căutare stoc</a>
+    <div>
+      <a class="nav-link" href="/">← Căutare stoc</a>
+    </div>
   </div>
   <input id="search" type="text" placeholder="Caută un model, brand, culoare…" autofocus />
   <div class="filters">
@@ -165,6 +181,9 @@
 
 <main id="grid" class="grid"></main>
 
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="label.js"></script>
+<script src="label-print.js"></script>
 <script src="catalog.js"></script>
 </body>
 </html>
