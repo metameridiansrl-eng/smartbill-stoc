@@ -7,6 +7,16 @@ function furnizorText(it) {
   return ["Furnizor: " + (it.furnizor || ""), it.adresaFurnizor].filter(Boolean).join(" — ");
 }
 
+function pretBlockHtml(it) {
+  const pretVechi = parseFloat(it.pret);
+  const hasDiscount = discountPercent > 0 && !isNaN(pretVechi) && pretVechi > 0;
+  if (!hasDiscount) {
+    return `<span class="pret">${escapeHtml(formatPrice(it.pret))}</span>`;
+  }
+  const pretNou = pretVechi * (1 - discountPercent / 100);
+  return `<span class="pret-block"><span class="pret-vechi">${escapeHtml(formatPrice(pretVechi))}</span><span class="pret-nou">${escapeHtml(formatPrice(pretNou))}</span></span>`;
+}
+
 function barcodeDataUrl(sku) {
   try {
     if (typeof JsBarcode === "undefined") throw new Error("JsBarcode nu e incarcat");
@@ -51,7 +61,7 @@ function buildPrintArea() {
       label.innerHTML = `
         <div class="name-block">${escapeHtml(nameBlockText(it))}</div>
         <div class="barcode-row">${barcodeHtml}</div>
-        <div class="sku-pret-row"><span class="sku">${escapeHtml(it.sku)}</span><span class="pret">${escapeHtml(formatPrice(it.pret))}</span></div>
+        <div class="sku-pret-row"><span class="sku">${escapeHtml(it.sku)}</span>${pretBlockHtml(it)}</div>
         <div class="fabricat">${it.fabricat ? "Fabricat în " + escapeHtml(it.fabricat) : ""}</div>
         <div class="furnizor-block">${escapeHtml(furnizorText(it))}</div>
         <div class="distribuitor-block">${escapeHtml(DISTRIBUITOR)}</div>
