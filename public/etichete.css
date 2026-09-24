@@ -1,4 +1,4 @@
- :root {
+:root {
   --bg: #f7f7f5; --card: #ffffff; --border: #e4e2dd; --text: #2b2a27;
   --muted: #767268; --accent: #b45309; --ok: #2f7d4f; --zero: #c0392b;
 }
@@ -70,6 +70,13 @@ select.row-firma { padding: 4px; border: 1px solid var(--border); border-radius:
 #fileInput { display: none; }
 #ioStatus { font-size: 12px; color: var(--muted); margin-top: 8px; min-height: 16px; text-align: center; }
 
+.discount-row { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 12.5px; }
+.discount-row label { color: var(--muted); font-weight: 600; }
+.discount-row input {
+  width: 60px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;
+}
+.discount-row input:focus { border-color: var(--accent); outline: none; }
+
 #printArea { display: none; }
 .plabel-print {
   width: 40mm; height: 30mm; padding: 1mm 1.5mm;
@@ -82,6 +89,9 @@ select.row-firma { padding: 4px; border: 1px solid var(--border); border-radius:
 .plabel-print .sku-pret-row { display: flex; justify-content: space-between; align-items: baseline; flex-shrink: 0; }
 .plabel-print .sku { font-size: 6.5pt; }
 .plabel-print .pret { font-size: 10pt; font-weight: bold; }
+.plabel-print .pret-block { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.05; }
+.plabel-print .pret-vechi { font-size: 5.5pt; color: #888; text-decoration: line-through; }
+.plabel-print .pret-nou { font-size: 9.5pt; font-weight: bold; color: var(--zero); }
 .plabel-print .fabricat { font-size: 5.2pt; color: #444; flex-shrink: 0; }
 .plabel-print .furnizor-block, .plabel-print .distribuitor-block {
   font-size: 5.2pt; line-height: 1.15; overflow: hidden; flex-shrink: 0;
