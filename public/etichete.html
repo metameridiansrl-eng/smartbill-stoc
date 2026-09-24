@@ -48,6 +48,11 @@
     </div>
     <input type="file" id="fileInput" accept=".xlsx,.xls" />
     <div id="ioStatus"></div>
+    <div class="discount-row">
+      <label for="discountPercent">Reducere etichete:</label>
+      <input id="discountPercent" type="number" min="0" max="95" step="1" value="0" />
+      <span>%</span>
+    </div>
     <div class="btn-row">
       <button class="btn btn-dark" id="printBtn" type="button" disabled>Printează toate etichetele</button>
     </div>
