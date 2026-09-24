@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Verificare expunere</title>
+<link rel="stylesheet" href="verificare.css" />
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Verificare expunere</h1>
+    <div>
+      <a class="nav-link" href="/">Căutare</a>
+      <a class="nav-link" href="/catalog.html">Catalog</a>
+      <a class="nav-link" href="/etichete.html">Etichete</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="eyebrow">Scanează produsele expuse</div>
+    <div class="scan-row">
+      <input id="manualSku" type="text" placeholder="Scanează sau scrie codul SKU…" autocomplete="off" />
+      <button id="scan-btn" type="button" aria-label="Scanează">📷</button>
+    </div>
+    <div id="scanStatus"></div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">Scanate <span id="statScanate">0</span></div>
+    <div id="scannedList"><div class="empty-hint">Niciun produs scanat încă.</div></div>
+    <div class="btn-row">
+      <button class="btn btn-dark" id="checkBtn" type="button" disabled>Verifică ce lipsește</button>
+    </div>
+  </div>
+
+  <div class="card" id="resultsCard" style="display:none;">
+    <div class="eyebrow">Rezultat</div>
+    <div id="resultsSummary" class="results-summary"></div>
+    <div id="resultsBody"></div>
+  </div>
+</main>
+
+<div id="scanner-overlay" class="scanner-overlay" style="display:none;">
+  <div class="scan-hint">Îndreaptă camera spre codul de bare</div>
+  <div id="reader"></div>
+  <button id="scan-close" type="button">✕ Închide</button>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="verificare.js"></script>
+</body>
+</html>
