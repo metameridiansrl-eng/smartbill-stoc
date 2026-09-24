@@ -159,13 +159,18 @@ function computeMissing() {
     if (!q || q <= 0) return;
     const key = groupKey(p);
     if (!groups.has(key)) {
-      groups.set(key, { key, brand: groupBrand(p), itemLabel: groupItemLabel(p), totalStock: 0 });
+      groups.set(key, { key, brand: groupBrand(p), itemLabel: groupItemLabel(p), totalStock: 0, skus: [] });
     }
-    groups.get(key).totalStock += q;
+    const g = groups.get(key);
+    g.totalStock += q;
+    g.skus.push({ sku: p["COD SKU"] || "", marime: p["MARIME"] || "", stock: q });
   });
   const missing = [];
   groups.forEach((val) => {
     if (!scannedKeys.has(val.key)) missing.push(val);
+  });
+  missing.forEach((m) => {
+    m.skus.sort((a, b) => String(a.marime).localeCompare(String(b.marime)));
   });
   missing.sort((a, b) => a.itemLabel.localeCompare(b.itemLabel));
   return missing;
@@ -192,7 +197,15 @@ checkBtn.addEventListener("click", () => {
     .map((brand) => {
       const items = byBrand.get(brand);
       const rows = items
-        .map((m) => `<div class="missing-row"><span class="missing-label">${escapeHtml(m.itemLabel)}</span><span class="missing-qty">${m.totalStock} buc</span></div>`)
+        .map((m) => {
+          const codesText = m.skus
+            .map((s) => `${escapeHtml(s.sku)}${s.marime ? " (" + escapeHtml(s.marime) + ")" : ""}: ${s.stock} buc`)
+            .join(" · ");
+          return `<div class="missing-item">
+            <div class="missing-row"><span class="missing-label">${escapeHtml(m.itemLabel)}</span><span class="missing-qty">${m.totalStock} buc</span></div>
+            <div class="missing-codes">${codesText}</div>
+          </div>`;
+        })
         .join("");
       return `<div class="brand-group">
         <div class="brand-heading">${escapeHtml(brand)} <span class="brand-count">${items.length}</span></div>
