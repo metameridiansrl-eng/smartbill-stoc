@@ -56,6 +56,15 @@ main { max-width: 900px; margin: 0 auto; padding: 0 16px 60px; }
 .btn-dark:disabled { background: #cfcfcf; cursor: default; }
 
 .results-summary { font-size: 13.5px; margin-bottom: 10px; font-weight: 600; }
+.brand-group { margin-top: 16px; }
+.brand-group:first-child { margin-top: 0; }
+.brand-heading {
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+  color: var(--accent); padding-bottom: 6px; border-bottom: 1px solid var(--border); margin-bottom: 2px;
+}
+.brand-count {
+  color: var(--muted); font-weight: 600; text-transform: none; letter-spacing: 0; font-size: 11px;
+}
 .missing-row {
   display: flex; justify-content: space-between; gap: 8px; font-size: 13px;
   padding: 8px 0; border-bottom: 1px solid #f2f2f0;
