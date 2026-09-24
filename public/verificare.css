@@ -65,9 +65,12 @@ main { max-width: 900px; margin: 0 auto; padding: 0 16px 60px; }
 .brand-count {
   color: var(--muted); font-weight: 600; text-transform: none; letter-spacing: 0; font-size: 11px;
 }
+.missing-item { padding: 8px 0; border-bottom: 1px solid #f2f2f0; }
+.missing-item:last-child { border-bottom: none; }
 .missing-row {
   display: flex; justify-content: space-between; gap: 8px; font-size: 13px;
-  padding: 8px 0; border-bottom: 1px solid #f2f2f0;
 }
-.missing-row:last-child { border-bottom: none; }
 .missing-qty { color: var(--zero); font-weight: 700; flex-shrink: 0; }
+.missing-codes {
+  font-size: 11.5px; color: var(--muted); margin-top: 3px; font-family: "SF Mono", "Consolas", monospace;
+}
