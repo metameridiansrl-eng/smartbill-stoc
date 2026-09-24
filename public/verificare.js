@@ -45,15 +45,21 @@ function normalizeKeyPart(str) {
   return String(str || "").trim().toLowerCase();
 }
 
+function groupBrand(p) {
+  return (p["NUME BRAND"] || "").trim() || "Fără brand";
+}
+
+function groupItemLabel(p) {
+  return [p["DENUMIRE SCURTA"] || p["DENUMIRE PRODUS"], p["CULOARE SCURT"] || p["CULOARE LUNG"]]
+    .filter(Boolean).join(" · ");
+}
+
 function groupKey(p) {
-  const denumire = p["DENUMIRE SCURTA"] || p["DENUMIRE PRODUS"] || "";
-  const culoare = p["CULOARE SCURT"] || p["CULOARE LUNG"] || "";
-  return normalizeKeyPart(denumire) + "||" + normalizeKeyPart(culoare);
+  return normalizeKeyPart(groupBrand(p)) + "||" + normalizeKeyPart(groupItemLabel(p));
 }
 
 function groupLabel(p) {
-  return [p["NUME BRAND"], p["DENUMIRE SCURTA"] || p["DENUMIRE PRODUS"], p["CULOARE SCURT"] || p["CULOARE LUNG"]]
-    .filter(Boolean).join(" · ");
+  return groupBrand(p) + " · " + groupItemLabel(p);
 }
 
 function escapeHtml(str) {
@@ -153,7 +159,7 @@ function computeMissing() {
     if (!q || q <= 0) return;
     const key = groupKey(p);
     if (!groups.has(key)) {
-      groups.set(key, { key, label: groupLabel(p), totalStock: 0 });
+      groups.set(key, { key, brand: groupBrand(p), itemLabel: groupItemLabel(p), totalStock: 0 });
     }
     groups.get(key).totalStock += q;
   });
@@ -161,7 +167,7 @@ function computeMissing() {
   groups.forEach((val) => {
     if (!scannedKeys.has(val.key)) missing.push(val);
   });
-  missing.sort((a, b) => a.label.localeCompare(b.label));
+  missing.sort((a, b) => a.itemLabel.localeCompare(b.itemLabel));
   return missing;
 }
 
@@ -174,8 +180,25 @@ checkBtn.addEventListener("click", () => {
     return;
   }
   resultsSummary.textContent = `${missing.length} modele/culori cu stoc NU au fost scanate — probabil în depozit:`;
-  resultsBody.innerHTML = missing
-    .map((m) => `<div class="missing-row"><span class="missing-label">${escapeHtml(m.label)}</span><span class="missing-qty">${m.totalStock} buc</span></div>`)
+
+  const byBrand = new Map();
+  missing.forEach((m) => {
+    if (!byBrand.has(m.brand)) byBrand.set(m.brand, []);
+    byBrand.get(m.brand).push(m);
+  });
+  const brands = Array.from(byBrand.keys()).sort((a, b) => a.localeCompare(b));
+
+  resultsBody.innerHTML = brands
+    .map((brand) => {
+      const items = byBrand.get(brand);
+      const rows = items
+        .map((m) => `<div class="missing-row"><span class="missing-label">${escapeHtml(m.itemLabel)}</span><span class="missing-qty">${m.totalStock} buc</span></div>`)
+        .join("");
+      return `<div class="brand-group">
+        <div class="brand-heading">${escapeHtml(brand)} <span class="brand-count">${items.length}</span></div>
+        ${rows}
+      </div>`;
+    })
     .join("");
 });
 
