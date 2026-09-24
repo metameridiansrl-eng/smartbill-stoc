@@ -56,6 +56,7 @@
     font-size: 13px;
     color: var(--accent);
     text-decoration: none;
+    margin-left: 10px;
   }
   main {
     max-width: 900px;
@@ -156,16 +157,6 @@
     padding: 8px;
     background: #000;
   }
-  .print-label-btn {
-    margin-top: 8px;
-    font-size: 12px;
-    padding: 5px 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: #fff;
-    cursor: pointer;
-  }
-  .print-label-btn:active { background: #f0efeb; }
 </style>
 </head>
 <body>
@@ -173,7 +164,10 @@
 <header>
   <div class="title-row">
     <h1>Căutare stoc</h1>
-    <a class="nav-link" href="/catalog.html">Catalog →</a>
+    <div>
+      <a class="nav-link" href="/catalog.html">Catalog →</a>
+      <a class="nav-link" href="/etichete.html">Etichete →</a>
+    </div>
   </div>
   <div class="search-row">
     <input id="search" type="text" placeholder="Caută după cod, denumire, culoare, brand…" autofocus />
@@ -191,9 +185,6 @@
 </div>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="label.js"></script><script src="label-print.js"></script>
 <script src="app.js"></script>
-<script src="app-search.js"></script>
 </body>
 </html>
