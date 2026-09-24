@@ -14,7 +14,8 @@ function pretBlockHtml(it) {
     return `<span class="pret">${escapeHtml(formatPrice(it.pret))}</span>`;
   }
   const pretNou = pretVechi * (1 - discountPercent / 100);
-  return `<span class="pret-block"><span class="pret-vechi">${escapeHtml(formatPrice(pretVechi))}</span><span class="pret-nou">${escapeHtml(formatPrice(pretNou))}</span></span>`;
+  const pretVechiText = formatPrice(pretVechi).replace(/\s*LEI$/i, "");
+  return `<span class="pret-block"><span class="pret-vechi">${escapeHtml(pretVechiText)}</span><span class="pret-nou">${escapeHtml(formatPrice(pretNou))}</span></span>`;
 }
 
 function barcodeDataUrl(sku) {
