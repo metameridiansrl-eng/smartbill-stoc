@@ -121,7 +121,14 @@ function buildCard(model) {
       const row = document.createElement("div");
       row.className = "variant-row";
       const label = [v["MARIME"], v["CULOARE LUNG"], v["COD SKU"]].filter(Boolean).join(" · ");
-      row.innerHTML = `<span>${escapeHtml(label)}</span><span class="qty ${qClass}">${qLabel}</span>`;
+      row.innerHTML = `
+        <span class="vinfo">${escapeHtml(label)}<br><button class="print-label-btn" type="button">🖨️ Etichetă</button></span>
+        <span class="qty ${qClass}">${qLabel}</span>
+      `;
+      row.querySelector(".print-label-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        window.printLabel(v);
+      });
       box.appendChild(row);
     }
     card.appendChild(box);
