@@ -3,10 +3,14 @@
 const searchInput = document.getElementById("search");
 const resultsEl = document.getElementById("results");
 const statusEl = document.getElementById("status");
+const scanBtn = document.getElementById("scan-btn");
+const scannerOverlay = document.getElementById("scanner-overlay");
+const scanCloseBtn = document.getElementById("scan-close");
 
 let products = [];
 let stockMap = {};
 let stockUpdatedAt = null;
+let html5QrCode = null;
 
 async function loadProducts() {
   const res = await fetch("/data/products.json");
@@ -38,6 +42,12 @@ function normalize(str) {
 function getStock(codSku) {
   const key = String(codSku || "").trim().toUpperCase();
   return stockMap[key] ?? null;
+}
+
+function escapeHtml(str) {
+  return String(str == null ? "" : str).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
 }
 
 function buildRow(p, isMainMatch) {
@@ -125,3 +135,82 @@ function render(list) {
     resultsEl.appendChild(more);
   }
 }
+
+function matchesQuery(p, terms) {
+  const haystack = normalize(
+    [p["COD SKU"], p["DENUMIRE SCURTA"], p["DENUMIRE PRODUS"], p["NUME BRAND"], p["CULOARE LUNG"], p["CULOARE SCURT"], p["MARIME"], p["FAMILIA"]]
+      .filter(Boolean)
+      .join(" ")
+  );
+  return terms.every((t) => haystack.includes(t));
+}
+
+function runSearch(query) {
+  const q = query.trim();
+  if (!q) {
+    resultsEl.innerHTML = "";
+    return;
+  }
+  const exact = findExactBySku(q);
+  if (exact) {
+    renderProductWithVariants(exact);
+    return;
+  }
+  const terms = normalize(q).split(/\s+/).filter(Boolean);
+  const list = products.filter((p) => matchesQuery(p, terms));
+  render(list);
+}
+
+searchInput.addEventListener("input", () => runSearch(searchInput.value));
+
+async function startScan() {
+  scannerOverlay.style.display = "flex";
+  try {
+    html5QrCode = new Html5Qrcode("reader");
+    await html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 150 } },
+      (decodedText) => {
+        stopScan();
+        searchInput.value = decodedText;
+        runSearch(decodedText);
+      },
+      () => {}
+    );
+  } catch (err) {
+    alert("Nu am putut porni camera. Verifică că ai dat acces la cameră pentru acest site.");
+    console.error(err);
+    scannerOverlay.style.display = "none";
+  }
+}
+
+async function stopScan() {
+  if (html5QrCode) {
+    try {
+      await html5QrCode.stop();
+      html5QrCode.clear();
+    } catch (err) {}
+    html5QrCode = null;
+  }
+  scannerOverlay.style.display = "none";
+}
+
+scanBtn.addEventListener("click", startScan);
+scanCloseBtn.addEventListener("click", stopScan);
+
+async function init() {
+  statusEl.textContent = "Se încarcă produsele…";
+  await loadProducts();
+  statusEl.textContent = "Se încarcă stocul din SmartBill…";
+  await loadStock();
+  statusEl.textContent = `${products.length} produse · stoc actualizat: ${
+    stockUpdatedAt ? new Date(stockUpdatedAt).toLocaleTimeString("ro-RO") : "indisponibil"
+  }`;
+  searchInput.focus();
+}
+init();
+
+setInterval(async () => {
+  await loadStock();
+  if (searchInput.value.trim()) runSearch(searchInput.value);
+}, 120000);
