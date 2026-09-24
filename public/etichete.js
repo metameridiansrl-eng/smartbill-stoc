@@ -6,12 +6,19 @@ let products = [];
 let brandsData = [];
 let items = [];
 let lastFabricat = "";
+let discountPercent = 0;
 
 const tableBody = document.getElementById("tableBody");
 const statProduse = document.getElementById("statProduse");
 const statEtichete = document.getElementById("statEtichete");
 const printBtn = document.getElementById("printBtn");
 const printArea = document.getElementById("printArea");
+const discountInput = document.getElementById("discountPercent");
+
+discountInput.addEventListener("input", () => {
+  const v = parseFloat(discountInput.value);
+  discountPercent = isNaN(v) || v < 0 ? 0 : Math.min(v, 95);
+});
 
 async function loadProducts() {
   const res = await fetch("/data/products.json");
