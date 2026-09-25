@@ -24,6 +24,11 @@ main { max-width: 900px; margin: 0 auto; padding: 0 16px 60px; }
   color: var(--text); font-size: 13px; font-weight: 700; text-transform: none;
   letter-spacing: 0; margin-left: 4px;
 }
+.brand-select {
+  width: 100%; padding: 12px 14px; font-size: 15px; border: 1px solid var(--border);
+  border-radius: 10px; background: #fff; color: var(--text); outline: none;
+}
+.brand-select:focus { border-color: var(--accent); }
 .scan-row { display: flex; gap: 8px; }
 #manualSku {
   flex: 1; padding: 12px 14px; font-size: 15px; border: 1px solid var(--border);
