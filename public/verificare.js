@@ -4,7 +4,9 @@ let products = [];
 let stockMap = {};
 let scannedKeys = new Set();
 let scannedList = [];
+let selectedBrand = "";
 
+const brandSelect = document.getElementById("brandSelect");
 const manualSku = document.getElementById("manualSku");
 const scanBtn = document.getElementById("scan-btn");
 const scannerOverlay = document.getElementById("scanner-overlay");
@@ -23,7 +25,27 @@ let scanCooldown = false;
 async function loadProducts() {
   const res = await fetch("/data/products.json");
   products = await res.json();
+  populateBrandSelect();
 }
+
+function populateBrandSelect() {
+  const brands = Array.from(
+    new Set(products.map((p) => (p["NUME BRAND"] || "").trim()).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b));
+  brandSelect.innerHTML =
+    '<option value="">— alege brand —</option>' +
+    brands.map((b) => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join("");
+}
+
+brandSelect.addEventListener("change", () => {
+  selectedBrand = brandSelect.value;
+  scannedKeys = new Set();
+  scannedList = [];
+  renderScannedList();
+  resultsCard.style.display = "none";
+  resultsBody.innerHTML = "";
+  showScanStatus("", false);
+});
 
 async function loadStock() {
   try {
@@ -94,9 +116,17 @@ function renderScannedList() {
 }
 
 function tryAddSku(sku) {
+  if (!selectedBrand) {
+    showScanStatus("Alege întâi un brand mai sus.", true);
+    return;
+  }
   const p = findProductBySku(sku);
   if (!p) {
     showScanStatus(`Cod necunoscut: "${sku}"`, true);
+    return;
+  }
+  if (normalizeKeyPart(groupBrand(p)) !== normalizeKeyPart(selectedBrand)) {
+    showScanStatus(`"${p["DENUMIRE SCURTA"] || p["DENUMIRE PRODUS"] || sku}" nu e din brandul ${selectedBrand} — ignorat.`, true);
     return;
   }
   const key = groupKey(p);
@@ -155,6 +185,7 @@ scanCloseBtn.addEventListener("click", stopScan);
 function computeMissing() {
   const groups = new Map();
   products.forEach((p) => {
+    if (normalizeKeyPart(groupBrand(p)) !== normalizeKeyPart(selectedBrand)) return;
     const q = getStock(p["COD SKU"]);
     if (!q || q <= 0) return;
     const key = groupKey(p);
@@ -177,39 +208,27 @@ function computeMissing() {
 }
 
 checkBtn.addEventListener("click", () => {
+  if (!selectedBrand) {
+    showScanStatus("Alege întâi un brand mai sus.", true);
+    return;
+  }
   const missing = computeMissing();
   resultsCard.style.display = "block";
   if (missing.length === 0) {
-    resultsSummary.textContent = "Toate modelele cu stoc au fost găsite pe rafturi. 🎉";
+    resultsSummary.textContent = `Toate modelele din ${selectedBrand} cu stoc au fost găsite pe rafturi. 🎉`;
     resultsBody.innerHTML = "";
     return;
   }
-  resultsSummary.textContent = `${missing.length} modele/culori cu stoc NU au fost scanate — probabil în depozit:`;
+  resultsSummary.textContent = `${missing.length} modele/culori din ${selectedBrand} cu stoc NU au fost scanate — probabil în depozit:`;
 
-  const byBrand = new Map();
-  missing.forEach((m) => {
-    if (!byBrand.has(m.brand)) byBrand.set(m.brand, []);
-    byBrand.get(m.brand).push(m);
-  });
-  const brands = Array.from(byBrand.keys()).sort((a, b) => a.localeCompare(b));
-
-  resultsBody.innerHTML = brands
-    .map((brand) => {
-      const items = byBrand.get(brand);
-      const rows = items
-        .map((m) => {
-          const codesText = m.skus
-            .map((s) => `${escapeHtml(s.sku)}${s.marime ? " (" + escapeHtml(s.marime) + ")" : ""}: ${s.stock} buc`)
-            .join(" · ");
-          return `<div class="missing-item">
-            <div class="missing-row"><span class="missing-label">${escapeHtml(m.itemLabel)}</span><span class="missing-qty">${m.totalStock} buc</span></div>
-            <div class="missing-codes">${codesText}</div>
-          </div>`;
-        })
-        .join("");
-      return `<div class="brand-group">
-        <div class="brand-heading">${escapeHtml(brand)} <span class="brand-count">${items.length}</span></div>
-        ${rows}
+  resultsBody.innerHTML = missing
+    .map((m) => {
+      const codesText = m.skus
+        .map((s) => `${escapeHtml(s.sku)}${s.marime ? " (" + escapeHtml(s.marime) + ")" : ""}: ${s.stock} buc`)
+        .join(" · ");
+      return `<div class="missing-item">
+        <div class="missing-row"><span class="missing-label">${escapeHtml(m.itemLabel)}</span><span class="missing-qty">${m.totalStock} buc</span></div>
+        <div class="missing-codes">${codesText}</div>
       </div>`;
     })
     .join("");
