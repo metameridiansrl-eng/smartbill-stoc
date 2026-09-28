@@ -96,7 +96,7 @@ select.row-firma { padding: 4px; border: 1px solid var(--border); border-radius:
 .plabel-print .pret-nou { font-size: 10pt; font-weight: bold; color: var(--zero); }
 .plabel-print .fabricat { font-size: 5.2pt; color: #444; flex-shrink: 0; }
 .plabel-print .furnizor-block, .plabel-print .distribuitor-block {
-  font-size: 5.2pt; line-height: 1.15; overflow: hidden; flex-shrink: 0;
+  font-size: 5.2pt; font-weight: bold; line-height: 1.15; overflow: hidden; flex-shrink: 0;
 }
 @media print {
   body > *:not(#printArea) { display: none !important; }
