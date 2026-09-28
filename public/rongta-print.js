@@ -94,8 +94,11 @@ function buildLabelCanvas(it) {
   ctx.textBaseline = "top";
   ctx.textAlign = "left";
 
+  // Conversie pt -> px la 203dpi (rezolutia reala a RPP30): px = pt * 203/72.
+  // name-block original 7pt (~20px), floor 4.5pt (~13px); pret/sku 10pt/6.5pt fixe (~28px/~18px);
+  // fabricat/furnizor/distribuitor original 5.2pt (~15px), floor 3.5pt (~10px).
   let y = 4;
-  y = drawFitText(ctx, nameBlockText(it), 4, y, W - 8, 54, true, 19, 10);
+  y = drawFitText(ctx, nameBlockText(it), 4, y, W - 8, 60, true, 20, 13);
   y += 3;
 
   const bcCanvas = document.createElement("canvas");
@@ -109,25 +112,25 @@ function buildLabelCanvas(it) {
   }
   y += 50;
 
-  ctx.font = "11px Arial";
+  ctx.font = "18px Arial";
   ctx.textAlign = "left";
-  ctx.fillText(it.sku || "", 4, y + 6);
+  ctx.fillText(it.sku || "", 4, y + 8);
   const pretText = pretPlainText(it);
-  ctx.font = "bold 20px Arial";
+  ctx.font = "bold 28px Arial";
   const ptw = ctx.measureText(pretText).width;
   ctx.fillText(pretText, W - 4 - ptw, y);
-  y += 26;
+  y += 34;
 
   ctx.textAlign = "left";
   if (it.fabricat) {
-    ctx.font = "9px Arial";
+    ctx.font = "15px Arial";
     ctx.fillText("Fabricat în " + it.fabricat, 4, y);
-    y += 12;
+    y += 19;
   }
 
-  y = drawFitText(ctx, furnizorText(it), 4, y, W - 8, 26, false, 9, 6);
+  y = drawFitText(ctx, furnizorText(it), 4, y, W - 8, 30, false, 15, 10);
   y += 1;
-  drawFitText(ctx, DISTRIBUITOR, 4, y, W - 8, 26, false, 9, 6);
+  drawFitText(ctx, DISTRIBUITOR, 4, y, W - 8, 30, false, 15, 10);
 
   return canvas;
 }
