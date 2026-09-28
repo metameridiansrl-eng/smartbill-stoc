@@ -1,6 +1,7 @@
 // etichete-scan.js — scanare camera + cautare manuala dupa SKU. Ruleaza in browser.
 
 const manualSku = document.getElementById("manualSku");
+const scanForm = document.getElementById("scanForm");
 const scanBtn = document.getElementById("scan-btn");
 const scannerOverlay = document.getElementById("scanner-overlay");
 const scanCloseBtn = document.getElementById("scan-close");
@@ -25,8 +26,11 @@ function tryAddSku(sku) {
   return true;
 }
 
-manualSku.addEventListener("keydown", (e) => {
-  if (e.key !== "Enter") return;
+// Folosim evenimentul de submit al formularului (nu keydown pe input), pentru ca pe telefon
+// tastatura virtuala (ex. Gboard) nu declanseaza mereu corect "Enter" ca eveniment de tasta,
+// dar declanseaza mereu submit cand apesi Enter/Go/Done.
+scanForm.addEventListener("submit", (e) => {
+  e.preventDefault();
   const val = manualSku.value.trim();
   if (!val) return;
   tryAddSku(val);
