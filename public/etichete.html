@@ -22,10 +22,10 @@
 <main>
   <div class="card">
     <div class="eyebrow">Scanează produs</div>
-    <div class="scan-row">
-      <input id="manualSku" type="text" placeholder="Scanează sau scrie codul SKU…" autocomplete="off" />
+    <form id="scanForm" class="scan-row" autocomplete="off">
+      <input id="manualSku" type="text" enterkeyhint="done" placeholder="Scanează sau scrie codul SKU…" autocomplete="off" />
       <button id="scan-btn" type="button" aria-label="Scanează">📷</button>
-    </div>
+    </form>
     <div id="scanStatus"></div>
   </div>
 
