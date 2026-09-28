@@ -1,8 +1,11 @@
 // rongta-print.js — printare directa pe imprimanta Rongta RPP30 prin Web Bluetooth, din Chrome Android.
-// Nu necesita nicio aplicatie instalata. Foloseste UUID-urile BLE reale ale RPP30 si comenzi CPCL (EG = imagine).
+// Nu deseneaza eticheta separat, cu formule proprii: construieste acelasi element .plabel-print
+// folosit la printarea normala din browser (etichete-print.js, aceeasi clasa CSS din etichete.css)
+// si il rasterizeaza cu html2canvas, ca eticheta Bluetooth sa fie identica ca proportii cu cea de pe hartie.
 
 const RONGTA_SERVICE_UUID = "49535343-fe7d-4ae5-8fa9-9fafd205e455";
 const RONGTA_WRITE_CHAR_UUID = "49535343-8841-43f4-a8d4-ecbe34729bb3";
+const RONGTA_DPI_SCALE = 203 / 96; // CSS px (96dpi, ca in browser) -> puncte la 203dpi (rezolutia reala a RPP30)
 
 let rongtaChar = null;
 let rongtaDevice = null;
@@ -41,97 +44,67 @@ async function bleWriteChunks(characteristic, str) {
   }
 }
 
-function wrapLines(ctx, text, maxWidth) {
-  const words = String(text || "").split(/\s+/).filter(Boolean);
-  const lines = [];
-  let cur = "";
-  words.forEach((w) => {
-    const test = cur ? cur + " " + w : w;
-    if (ctx.measureText(test).width > maxWidth && cur) {
-      lines.push(cur);
-      cur = w;
-    } else {
-      cur = test;
-    }
-  });
-  if (cur) lines.push(cur);
-  return lines;
+function waitForImages(el) {
+  const imgs = Array.from(el.querySelectorAll("img"));
+  return Promise.all(
+    imgs.map(
+      (img) =>
+        img.complete
+          ? Promise.resolve()
+          : new Promise((res) => {
+              img.onload = res;
+              img.onerror = res;
+            })
+    )
+  );
 }
 
-function drawFitText(ctx, text, x, y, maxWidth, maxHeight, bold, startSize, minSize) {
-  let size = startSize;
-  let lines = [];
-  let lineHeight = 0;
-  while (size >= minSize) {
-    ctx.font = (bold ? "bold " : "") + size + "px Arial";
-    lines = wrapLines(ctx, text, maxWidth);
-    lineHeight = Math.round(size * 1.15);
-    if (lines.length * lineHeight <= maxHeight) break;
-    size -= 1;
-  }
-  ctx.font = (bold ? "bold " : "") + size + "px Arial";
-  lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
-  return y + lines.length * lineHeight;
+function nextFrame() {
+  return new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
 }
 
-function pretPlainText(it) {
-  const pretVechi = parseFloat(it.pret);
-  const hasDiscount = discountPercent > 0 && !isNaN(pretVechi) && pretVechi > 0;
-  if (!hasDiscount) return formatPrice(it.pret);
-  const pretNou = pretVechi * (1 - discountPercent / 100);
-  return formatPrice(pretNou);
-}
+async function buildRongtaLabelCanvas(it) {
+  // Exact acelasi markup si aceeasi clasa CSS (.plabel-print) ca in buildPrintArea() din etichete-print.js,
+  // pentru un singur produs, randat in afara ecranului si apoi rasterizat.
+  const label = document.createElement("div");
+  label.className = "plabel-print";
+  label.style.position = "fixed";
+  label.style.left = "-9999px";
+  label.style.top = "0";
+  label.style.background = "#fff";
 
-function buildLabelCanvas(it) {
-  const W = 320, H = 240;
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = "#000";
-  ctx.textBaseline = "top";
-  ctx.textAlign = "left";
+  const dataUrl = barcodeDataUrl(it.sku);
+  const barcodeHtml = dataUrl
+    ? `<img src="${dataUrl}" alt="cod de bare">`
+    : `<div style="font-size:6pt;color:#c00;">Eroare cod de bare</div>`;
+  label.innerHTML = `
+    <div class="name-block">${escapeHtml(nameBlockText(it))}</div>
+    <div class="barcode-row">${barcodeHtml}</div>
+    <div class="sku-pret-row"><span class="sku">${escapeHtml(it.sku)}</span>${pretBlockHtml(it)}</div>
+    <div class="fabricat">${it.fabricat ? "Fabricat în " + escapeHtml(it.fabricat) : ""}</div>
+    <div class="furnizor-block">${escapeHtml(furnizorText(it))}</div>
+    <div class="distribuitor-block">${escapeHtml(DISTRIBUITOR)}</div>
+  `;
+  document.body.appendChild(label);
 
-  // Conversie pt -> px la 203dpi (rezolutia reala a RPP30): px = pt * 203/72.
-  // Bugetele de inaltime (in px) copiaza exact tintele din etichete-print.js (shrinkBlockToFit):
-  // name-block 9mm(72px) floor 4.5pt; furnizor/distribuitor 4.5mm(36px) floor 3.5pt.
-  let y = 4;
-  y = drawFitText(ctx, nameBlockText(it), 4, y, W - 8, 72, true, 20, 13);
-  y += 3;
+  await nextFrame();
+  // Aceleasi apeluri de shrink-to-fit ca la printarea normala din browser — acelasi rezultat vizual.
+  shrinkBlockToFit(label.querySelector(".name-block"), 9, 4.5);
+  shrinkBlockToFit(label.querySelector(".furnizor-block"), 4.5, 3.5);
+  shrinkBlockToFit(label.querySelector(".distribuitor-block"), 4.5, 3.5);
+  await waitForImages(label);
+  await nextFrame();
 
-  const bcCanvas = document.createElement("canvas");
+  let canvas;
   try {
-    JsBarcode(bcCanvas, (it.sku || "0000000000").toString(), {
-      format: "CODE128", width: 2, height: 100, displayValue: false, margin: 0,
+    canvas = await html2canvas(label, {
+      scale: RONGTA_DPI_SCALE,
+      backgroundColor: "#ffffff",
+      logging: false,
     });
-    ctx.drawImage(bcCanvas, 10, y, W - 20, 46);
-  } catch (e) {
-    console.warn("Barcode error", e);
+  } finally {
+    document.body.removeChild(label);
   }
-  y += 50;
-
-  ctx.font = "18px Arial";
-  ctx.textAlign = "left";
-  ctx.fillText(it.sku || "", 4, y + 8);
-  const pretText = pretPlainText(it);
-  ctx.font = "bold 28px Arial";
-  const ptw = ctx.measureText(pretText).width;
-  ctx.fillText(pretText, W - 4 - ptw, y);
-  y += 34;
-
-  ctx.textAlign = "left";
-  if (it.fabricat) {
-    ctx.font = "15px Arial";
-    ctx.fillText("Fabricat în " + it.fabricat, 4, y);
-    y += 19;
-  }
-
-  y = drawFitText(ctx, furnizorText(it), 4, y, W - 8, 36, false, 15, 10);
-  y += 1;
-  drawFitText(ctx, DISTRIBUITOR, 4, y, W - 8, 36, false, 15, 10);
-
   return canvas;
 }
 
@@ -165,7 +138,14 @@ async function printLabelOnRongta(it) {
     const ch = await connectRongta();
     if (!ch) return false;
   }
-  const canvas = buildLabelCanvas(it);
+  let canvas;
+  try {
+    canvas = await buildRongtaLabelCanvas(it);
+  } catch (err) {
+    console.error(err);
+    alert("Eroare la generarea etichetei: " + err.message);
+    return false;
+  }
   const { hex, widthBytes, height } = canvasToCpclEG(canvas);
   const cpcl =
     "! 0 200 200 " + (height + 10) + " 1\r\n" +
