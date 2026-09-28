@@ -95,10 +95,10 @@ function buildLabelCanvas(it) {
   ctx.textAlign = "left";
 
   // Conversie pt -> px la 203dpi (rezolutia reala a RPP30): px = pt * 203/72.
-  // name-block original 7pt (~20px), floor 4.5pt (~13px); pret/sku 10pt/6.5pt fixe (~28px/~18px);
-  // fabricat/furnizor/distribuitor original 5.2pt (~15px), floor 3.5pt (~10px).
+  // Bugetele de inaltime (in px) copiaza exact tintele din etichete-print.js (shrinkBlockToFit):
+  // name-block 9mm(72px) floor 4.5pt; furnizor/distribuitor 4.5mm(36px) floor 3.5pt.
   let y = 4;
-  y = drawFitText(ctx, nameBlockText(it), 4, y, W - 8, 60, true, 20, 13);
+  y = drawFitText(ctx, nameBlockText(it), 4, y, W - 8, 72, true, 20, 13);
   y += 3;
 
   const bcCanvas = document.createElement("canvas");
@@ -128,9 +128,9 @@ function buildLabelCanvas(it) {
     y += 19;
   }
 
-  y = drawFitText(ctx, furnizorText(it), 4, y, W - 8, 30, false, 15, 10);
+  y = drawFitText(ctx, furnizorText(it), 4, y, W - 8, 36, false, 15, 10);
   y += 1;
-  drawFitText(ctx, DISTRIBUITOR, 4, y, W - 8, 30, false, 15, 10);
+  drawFitText(ctx, DISTRIBUITOR, 4, y, W - 8, 36, false, 15, 10);
 
   return canvas;
 }
