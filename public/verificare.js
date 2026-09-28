@@ -204,7 +204,7 @@ function computeMissing() {
     m.skus.sort((a, b) => String(a.marime).localeCompare(String(b.marime)));
   });
   missing.sort((a, b) => a.itemLabel.localeCompare(b.itemLabel));
-  return missing;
+  return { missing, totalModels: groups.size };
 }
 
 checkBtn.addEventListener("click", () => {
@@ -212,14 +212,14 @@ checkBtn.addEventListener("click", () => {
     showScanStatus("Alege întâi un brand mai sus.", true);
     return;
   }
-  const missing = computeMissing();
+  const { missing, totalModels } = computeMissing();
   resultsCard.style.display = "block";
   if (missing.length === 0) {
-    resultsSummary.textContent = `Toate modelele din ${selectedBrand} cu stoc au fost găsite pe rafturi. 🎉`;
+    resultsSummary.textContent = `${totalModels} modele unice cu stoc în ${selectedBrand} — toate au fost găsite pe rafturi. 🎉`;
     resultsBody.innerHTML = "";
     return;
   }
-  resultsSummary.textContent = `${missing.length} modele/culori din ${selectedBrand} cu stoc NU au fost scanate — probabil în depozit:`;
+  resultsSummary.textContent = `${totalModels} modele unice cu stoc în ${selectedBrand}, din care ${missing.length} NU au fost scanate — probabil în depozit:`;
 
   resultsBody.innerHTML = missing
     .map((m) => {
