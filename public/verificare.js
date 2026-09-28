@@ -18,6 +18,9 @@ const checkBtn = document.getElementById("checkBtn");
 const resultsCard = document.getElementById("resultsCard");
 const resultsBody = document.getElementById("resultsBody");
 const resultsSummary = document.getElementById("resultsSummary");
+const countedInput = document.getElementById("countedInput");
+const countBtn = document.getElementById("countBtn");
+const countResult = document.getElementById("countResult");
 
 let html5QrCode = null;
 let scanCooldown = false;
@@ -45,6 +48,8 @@ brandSelect.addEventListener("change", () => {
   resultsCard.style.display = "none";
   resultsBody.innerHTML = "";
   showScanStatus("", false);
+  countResult.textContent = "";
+  countResult.classList.remove("error");
 });
 
 async function loadStock() {
@@ -181,6 +186,39 @@ async function stopScan() {
 
 scanBtn.addEventListener("click", startScan);
 scanCloseBtn.addEventListener("click", stopScan);
+
+function countModelsWithStock() {
+  const keys = new Set();
+  products.forEach((p) => {
+    if (normalizeKeyPart(groupBrand(p)) !== normalizeKeyPart(selectedBrand)) return;
+    const q = getStock(p["COD SKU"]);
+    if (!q || q <= 0) return;
+    keys.add(groupKey(p));
+  });
+  return keys.size;
+}
+
+countBtn.addEventListener("click", () => {
+  if (!selectedBrand) {
+    countResult.textContent = "Alege întâi un brand mai sus.";
+    countResult.classList.add("error");
+    return;
+  }
+  const counted = parseInt(countedInput.value, 10);
+  if (isNaN(counted) || counted < 0) {
+    countResult.textContent = "Introdu un număr valid.";
+    countResult.classList.add("error");
+    return;
+  }
+  const totalModels = countModelsWithStock();
+  const diff = totalModels - counted;
+  countResult.classList.remove("error");
+  if (diff <= 0) {
+    countResult.textContent = `${totalModels} modele unice cu stoc în ${selectedBrand} — numărul introdus acoperă tot (sau mai mult).`;
+  } else {
+    countResult.textContent = `${totalModels} modele unice cu stoc în ${selectedBrand} — probabil ${diff} NU sunt expuse (estimat).`;
+  }
+});
 
 function computeMissing() {
   const groups = new Map();
