@@ -77,6 +77,8 @@ select.row-firma { padding: 4px; border: 1px solid var(--border); border-radius:
 }
 .discount-row input:focus { border-color: var(--accent); outline: none; }
 
+#rongtaStatus { font-size: 12px; color: var(--muted); margin-top: 8px; min-height: 16px; text-align: center; }
+
 #printArea { display: none; }
 .plabel-print {
   width: 40mm; height: 30mm; padding: 1mm 1.5mm;
