@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Inventar</title>
+<link rel="stylesheet" href="inventar.css" />
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Inventar</h1>
+    <div>
+      <a class="nav-link" href="/">Căutare</a>
+      <a class="nav-link" href="/catalog.html">Catalog</a>
+      <a class="nav-link" href="/etichete.html">Etichete</a>
+      <a class="nav-link" href="/verificare.html">Verificare</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="eyebrow">Tip inventar</div>
+    <div class="mode-row">
+      <button class="mode-btn active" id="modeBrandBtn" type="button">Pe brand</button>
+      <button class="mode-btn" id="modeStoreBtn" type="button">Tot magazinul</button>
+    </div>
+    <select id="brandSelect" class="brand-select">
+      <option value="">— alege brand —</option>
+    </select>
+  </div>
+
+  <div class="card" id="resumeCard" style="display:none;">
+    <div id="resumeText"></div>
+    <div class="btn-row">
+      <button class="btn btn-light" id="resetBtn" type="button">Inventar nou (șterge progresul)</button>
+    </div>
+  </div>
+
+  <div class="card" id="scanCard" style="display:none;">
+    <div class="eyebrow">Scanează produse</div>
+    <form id="scanForm" class="scan-row" autocomplete="off">
+      <input id="manualSku" type="text" enterkeyhint="done" placeholder="Scanează sau scrie codul SKU…" autocomplete="off" />
+      <button id="scan-btn" type="button" aria-label="Scanează">📷</button>
+    </form>
+    <div id="scanStatus"></div>
+  </div>
+
+  <div class="card" id="countedCard" style="display:none;">
+    <div class="eyebrow">Numărate</div>
+    <div class="stats">
+      <div class="stat"><div class="num" id="statModele">0</div><div class="lbl">Modele</div></div>
+      <div class="stat"><div class="num" id="statBucati">0</div><div class="lbl">Bucăți</div></div>
+    </div>
+    <div id="countedList"><div class="empty-hint">Niciun produs numărat încă.</div></div>
+    <div class="btn-row">
+      <button class="btn btn-dark" id="finishBtn" type="button">Termină și compară cu stocul</button>
+    </div>
+  </div>
+
+  <div class="card" id="resultsCard" style="display:none;">
+    <div class="eyebrow">Rezultat</div>
+    <div id="resultsSummary" class="results-summary"></div>
+    <div id="resultsBody"></div>
+  </div>
+</main>
+
+<div id="scanner-overlay" class="scanner-overlay" style="display:none;">
+  <div class="scan-hint">Îndreaptă camera spre codul de bare</div>
+  <div id="reader"></div>
+  <button id="scan-close" type="button">✕ Închide</button>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="inventar.js"></script>
+</body>
+</html>
