@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Diagnostic Bluetooth</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f7f7f5; color: #2b2a27; margin: 0; padding: 16px; }
+  h1 { font-size: 18px; }
+  p { font-size: 13px; color: #555; }
+  button {
+    width: 100%; padding: 14px; font-size: 14px; font-weight: 700; text-transform: uppercase;
+    background: #2b2b2b; color: #fff; border: none; border-radius: 10px; cursor: pointer; margin: 10px 0;
+  }
+  #out {
+    white-space: pre-wrap; font-family: "SF Mono", Consolas, monospace; font-size: 12px;
+    background: #fff; border: 1px solid #e4e2dd; border-radius: 10px; padding: 12px; margin-top: 10px;
+    min-height: 100px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Diagnostic Bluetooth imprimantă</h1>
+<p>Apasă butonul, alege imprimanta din listă (trebuie să fie pornită și lângă telefon). Pagina listează ce servicii/caracteristici Bluetooth are, ca să aflăm cum să trimitem etichete către ea. Trimite-mi o poză cu ce apare mai jos.</p>
+
+<button id="scanBtn" type="button">Scanează imprimanta</button>
+<div id="out">Aștept…</div>
+
+<script>
+  // UUID-uri candidate pentru module BLE UART folosite frecvent in imprimante termice ieftine.
+  const CANDIDATE_SERVICES = [
+    "49535343-fe7d-4ae5-8fa9-9fafd205e455", // Microchip Transparent UART (folosit si de Rongta RPP30)
+    "0000ffe0-0000-1000-8000-00805f9b34fb", // HM-10 / modul UART generic, foarte comun
+    "6e400001-b5a3-f393-e0a9-e50e24dcca9e", // Nordic UART Service
+    "000018f0-0000-1000-8000-00805f9b34fb", // alt profil comun la imprimante termice
+    "e7810a71-73ae-499d-8c15-faa9aef0c3f2", // profil folosit de unele imprimante ESC/POS chinezesti
+    "generic_access",
+    "generic_attribute",
+    "device_information",
+  ];
+
+  const out = document.getElementById("out");
+  const scanBtn = document.getElementById("scanBtn");
+
+  function log(msg) {
+    out.textContent += msg + "\n";
+  }
+
+  scanBtn.addEventListener("click", async () => {
+    out.textContent = "";
+    if (!navigator.bluetooth) {
+      log("Bluetooth Web API nu e disponibil în acest browser. Deschide în Chrome pe Android.");
+      return;
+    }
+    try {
+      log("Se deschide lista de dispozitive Bluetooth…");
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: CANDIDATE_SERVICES,
+      });
+      log("Ales: " + (device.name || "(fără nume)") + " / id: " + device.id);
+      log("Conectare…");
+      const server = await device.gatt.connect();
+      log("Conectat. Caut servicii disponibile din lista candidatelor…\n");
+
+      let foundAny = false;
+      for (const uuid of CANDIDATE_SERVICES) {
+        try {
+          const service = await server.getPrimaryService(uuid);
+          foundAny = true;
+          log("✓ SERVICIU GĂSIT: " + service.uuid);
+          const chars = await service.getCharacteristics();
+          chars.forEach((c) => {
+            const props = Object.keys(c.properties).filter((k) => c.properties[k]);
+            log("    caracteristică: " + c.uuid + "  [" + props.join(", ") + "]");
+          });
+          log("");
+        } catch (e) {
+          // serviciul asta nu exista pe acest dispozitiv — normal, incercam urmatorul
+        }
+      }
+
+      if (!foundAny) {
+        log("Niciun serviciu din lista cunoscută nu a fost găsit pe acest dispozitiv.");
+        log("Trimite-mi oricum numele exact al imprimantei (" + (device.name || "necunoscut") + ") ca să caut protocolul ei specific.");
+      } else {
+        log("Gata — trimite-mi o poză cu tot ce scrie mai sus.");
+      }
+
+      device.gatt.disconnect();
+    } catch (err) {
+      log("Eroare: " + err.message);
+      console.error(err);
+    }
+  });
+</script>
+
+</body>
+</html>
