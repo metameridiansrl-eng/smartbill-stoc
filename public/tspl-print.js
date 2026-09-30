@@ -124,7 +124,9 @@ function canvasToTsplBitmap(canvas) {
         if (x < w) {
           const p = (y * w + x) * 4;
           const lum = imgData[p] * 0.299 + imgData[p + 1] * 0.587 + imgData[p + 2] * 0.114;
-          on = lum < 128 ? 1 : 0;
+          // Aceasta imprimanta interpreteaza biții invers fata de conventia TSPL standard:
+          // bit 0 = tipareste negru, bit 1 = lasa alb. De-aia logica e inversata fata de Rongta (CPCL).
+          on = lum < 128 ? 0 : 1;
         }
         byte |= on << (7 - bit);
       }
