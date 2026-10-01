@@ -88,6 +88,7 @@ async function buildTsplLabelCanvas(it) {
 
   await nextFrame();
   shrinkBlockToFit(label.querySelector(".name-block"), 9, 4.5);
+  shrinkRowToFit(label.querySelector(".sku-pret-row"), 5);
   shrinkBlockToFit(label.querySelector(".furnizor-block"), 4.5, 3.5);
   shrinkBlockToFit(label.querySelector(".distribuitor-block"), 4.5, 3.5);
   await waitForImages(label);
