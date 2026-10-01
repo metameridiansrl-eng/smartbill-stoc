@@ -45,6 +45,20 @@ function shrinkBlockToFit(el, maxHeightMm, minFontPt) {
   }
 }
 
+// Micsoreaza randul cu SKU + pret (sau SKU + pret taiat + pret nou, la reducere) pe orizontala,
+// ca sa incapa mereu pe latimea etichetei, indiferent cat de lungi sunt codul SKU sau preturile.
+function shrinkRowToFit(el, minFontPt) {
+  if (!el) return;
+  let fontSize = parseFloat(getComputedStyle(el).fontSize);
+  const floorPx = minFontPt * 1.3333333;
+  let guard = 0;
+  while (el.scrollWidth > el.clientWidth + 0.5 && fontSize > floorPx && guard < 60) {
+    fontSize -= 0.2;
+    el.style.fontSize = fontSize + "px";
+    guard++;
+  }
+}
+
 function buildPrintArea() {
   printArea.innerHTML = "";
   printArea.style.position = "absolute";
@@ -69,6 +83,7 @@ function buildPrintArea() {
       `;
       printArea.appendChild(label);
       shrinkBlockToFit(label.querySelector(".name-block"), 9, 4.5);
+      shrinkRowToFit(label.querySelector(".sku-pret-row"), 5);
       shrinkBlockToFit(label.querySelector(".furnizor-block"), 4.5, 3.5);
       shrinkBlockToFit(label.querySelector(".distribuitor-block"), 4.5, 3.5);
     }
