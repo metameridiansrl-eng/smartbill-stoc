@@ -9,11 +9,22 @@ function furnizorText(it) {
 
 function pretBlockHtml(it) {
   const pretVechi = parseFloat(it.pret);
-  const hasDiscount = discountPercent > 0 && !isNaN(pretVechi) && pretVechi > 0;
-  if (!hasDiscount) {
+  const hasPret = !isNaN(pretVechi) && pretVechi > 0;
+  // Daca produsul are "Pret redus" propriu (din importul Excel), acela are prioritate fata de reducerea globala.
+  const rawRedus = String(it.pretRedus == null ? "" : it.pretRedus).trim().replace(",", ".");
+  const hasPerItem = rawRedus !== "" && !isNaN(parseFloat(rawRedus));
+  let pretNou = NaN;
+  if (hasPret) {
+    if (hasPerItem) {
+      const pr = parseFloat(rawRedus);
+      if (pr > 0 && pr < pretVechi) pretNou = pr;
+    } else if (discountPercent > 0) {
+      pretNou = pretVechi * (1 - discountPercent / 100);
+    }
+  }
+  if (isNaN(pretNou)) {
     return `<span class="pret">${escapeHtml(formatPrice(it.pret))}</span>`;
   }
-  const pretNou = pretVechi * (1 - discountPercent / 100);
   const pretVechiText = formatPrice(pretVechi).replace(/\s*LEI$/i, "");
   return `<span class="pret-block"><span class="pret-vechi">${escapeHtml(pretVechiText)}</span><span class="pret-nou">${escapeHtml(formatPrice(pretNou))}</span></span>`;
 }
