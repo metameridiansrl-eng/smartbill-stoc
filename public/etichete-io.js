@@ -14,11 +14,11 @@ function itemToRow(it) {
     "Culoare": it.culoare,
     "Masura": it.masura,
     "Pret": it.pret,
-    "Pret redus": it.pretRedus || "",
     "Fabricat in": it.fabricat,
     "Cantitate": it.cantitate,
     "Firma": it.furnizor,
     "Adresa Furnizor": it.adresaFurnizor,
+    "Pret redus": it.pretRedus || "", // ultima coloana; daca e completata, eticheta se printeaza cu 2 preturi
   };
 }
 
