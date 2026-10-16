@@ -1,6 +1,11 @@
 // etichete.js — stare, cautare produs, randare lista. Ruleaza in browser.
 
-const DISTRIBUITOR = "Distribuitor: ONZE SHOWROOM SRL — Str. Suvenir nr. 4, București";
+// Distribuitorii disponibili pe eticheta. Se alege din lista "Distribuitor" de pe pagina.
+const DISTRIBUITORI = [
+  { nume: "ONZE SHOWROOM SRL", text: "Distribuitor: ONZE SHOWROOM SRL — Str. Suvenir nr. 4, București" },
+  { nume: "ONZE STORE BY IMM S.R.L.", text: "Distribuitor: ONZE STORE BY IMM S.R.L. — Str. Jean-Alexandru Steriadi nr. 27, București" },
+];
+let DISTRIBUITOR = DISTRIBUITORI[0].text;
 
 let products = [];
 let brandsData = [];
@@ -14,6 +19,26 @@ const statEtichete = document.getElementById("statEtichete");
 const printBtn = document.getElementById("printBtn");
 const printArea = document.getElementById("printArea");
 const discountInput = document.getElementById("discountPercent");
+
+const distribuitorSelect = document.getElementById("distribuitorSelect");
+DISTRIBUITORI.forEach((d, i) => {
+  const opt = document.createElement("option");
+  opt.value = String(i);
+  opt.textContent = d.nume;
+  distribuitorSelect.appendChild(opt);
+});
+try {
+  const saved = parseInt(localStorage.getItem("distribuitorIdx"), 10);
+  if (!isNaN(saved) && DISTRIBUITORI[saved]) {
+    distribuitorSelect.value = String(saved);
+    DISTRIBUITOR = DISTRIBUITORI[saved].text;
+  }
+} catch (e) {}
+distribuitorSelect.addEventListener("change", () => {
+  const idx = parseInt(distribuitorSelect.value, 10);
+  DISTRIBUITOR = DISTRIBUITORI[idx].text;
+  try { localStorage.setItem("distribuitorIdx", String(idx)); } catch (e) {}
+});
 
 discountInput.addEventListener("input", () => {
   const v = parseFloat(discountInput.value);
